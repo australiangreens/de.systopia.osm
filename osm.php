@@ -106,9 +106,6 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       ->execute()
       ->first();
 
-    \Civi::log()->debug('Existing addr: %s', ['%s' => json_encode($current_address)]);
-    \Civi::log()->debug('Updated addr: %s', ['%s' => json_encode($params)]);
-
     $fields_to_check = [
       'city',
       'country_id',
