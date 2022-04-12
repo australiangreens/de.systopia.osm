@@ -121,6 +121,9 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
     $skip_geocode = TRUE;
     foreach ($fields_to_check as $field) {
       $skip_geocode = ($current_address[$field] == $params[$field]);
+      if (!skip_geocode) {
+        break;
+      }
     }
 
     if ($skip_geocode) {
