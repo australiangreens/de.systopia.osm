@@ -9,7 +9,7 @@
     <email>leichtfuss@systopia.de</email>
   </maintainer>
   <releaseDate>2022-04-12</releaseDate>
-  <version>1.4-alpha2</version>
+  <version>1.4-alpha3</version>
   <develStage>testing</develStage>
   <compatibility>
     <ver>5.0</ver>
