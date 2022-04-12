@@ -100,7 +100,7 @@ function osm_civicrm_managed(&$entities) {
  * address
  */
 function osm_civicrm_pre($op, $objectName, $id, &$params) {
-  if ($objectName === 'Address' && $op === 'edit' && !is_null($id)) {
+  if ($objectName === 'Address' && $op === 'edit' && !is_null($id) && $params['manual_geo_code'] == 0) {
     $current_address = \Civi\Api4\Address::get(FALSE)
       ->addWhere('id', '=', $id)
       ->execute()
