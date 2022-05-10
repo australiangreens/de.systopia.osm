@@ -106,8 +106,6 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       ->execute()
       ->first();
 
-    Civi::log()->debug(json_encode($current_address));
-    Civi::log()->debug(json_encode($params));
     $fields_to_check = [
       'city',
       'country_id',
@@ -122,17 +120,15 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
 
     $skip_geocode = TRUE;
     foreach ($fields_to_check as $field) {
-      $skip_geocode = ($current_address[$field] == $params[$field]);
+      $skip_geocode = (strtolower($current_address[$field]) == strtolower($params[$field]);
       if (!$skip_geocode) {
         break;
       }
     }
 
-    if ($skip_geocode) {
+    if ($skip_geocode && !is_null($current_address['geo_code_1']) && $current_address['manual_geo_code'] == 0) {
       unset($params['geo_code_1']);
       unset($params['geo_code_2']);
     }
-    Civi::log()->debug('finished pre hook');
-    Civi::log()->debug(json_encode($params));
   }
 }
