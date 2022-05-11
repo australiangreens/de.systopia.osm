@@ -98,6 +98,7 @@ function osm_civicrm_managed(&$entities) {
  * Used to prevent new geo_code_1 & geo_code_2 values being written to the database
  * when the address data being written is otherwise no different to the existing
  * address
+ *
  */
 function osm_civicrm_pre($op, $objectName, $id, &$params) {
   if ($objectName === 'Address' && $op === 'edit' && !is_null($id) && $params['manual_geo_code'] == 0) {
@@ -105,6 +106,7 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       ->addWhere('id', '=', $id)
       ->execute()
       ->first();
+
 
     $fields_to_check = [
       'city',
@@ -118,17 +120,24 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       'supplemental_address_3',
     ];
 
-    $skip_geocode = TRUE;
+    $fields_match = TRUE;
     foreach ($fields_to_check as $field) {
-      $skip_geocode = (strtolower($current_address[$field]) == strtolower($params[$field]);
-      if (!$skip_geocode) {
+      fields_match = (strtolower($current_address[$field]) == strtolower($params[$field]);
+      if (!$fields_match) {
         break;
       }
     }
 
-    if ($skip_geocode && !is_null($current_address['geo_code_1']) && $current_address['manual_geo_code'] == 0) {
-      unset($params['geo_code_1']);
-      unset($params['geo_code_2']);
+    if ($fields_match) {
+      // Address data is the same, now decide if we keep existing or use
+      // new geo_code_x values (we don't want NULL or "Null Island")
+      $current_address_has_geo_codes = ($current_address['geo_code_1'] && $current_address['geo_code_2']);
+      $new_address_has_geo_codes = ($params['geo_code_1'] && $params['geo_code_2']);
+
+      if ($current_address_has_geo_codes && !$new_address_has_geo_codes) {
+        unset($params['geo_code_1']);
+        unset($params['geo_code_2']);
+      }
     }
   }
 }
