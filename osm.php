@@ -101,12 +101,15 @@ function osm_civicrm_managed(&$entities) {
  *
  */
 function osm_civicrm_pre($op, $objectName, $id, &$params) {
-  if ($objectName === 'Address' && $op === 'edit' && !is_null($id) && $params['manual_geo_code'] != 1) {
+  if ($objectName === 'Address' && $op === 'edit' && !is_null($id)) {
+
+    Civi::log()->debug(json_encode($params));
     $current_address = \Civi\Api4\Address::get(FALSE)
       ->addWhere('id', '=', $id)
       ->execute()
       ->first();
 
+    Civi::log()->debug(json_encode($current_address));
 
     $fields_to_check = [
       'city',
@@ -133,8 +136,8 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
     if ($fields_match) {
       // Address data is the same, now decide if we keep existing or use
       // new geo_code_x values (we don't want NULL or "Null Island")
-      $current_address_has_geo_codes = ($current_address['geo_code_1'] && $current_address['geo_code_2']);
-      $new_address_has_geo_codes = ($params['geo_code_1'] && $params['geo_code_2']);
+      $current_address_has_geo_codes = (!empty($current_address['geo_code_1']) && !empty($current_address['geo_code_2']));
+      $new_address_has_geo_codes = (!empty($params['geo_code_1']) && !empty($params['geo_code_2']));
 
       if ($current_address['manual_geo_code'] || ($current_address_has_geo_codes && !$new_address_has_geo_codes)) {
         unset($params['geo_code_1']);
