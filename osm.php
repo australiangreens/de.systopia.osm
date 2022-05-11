@@ -101,7 +101,7 @@ function osm_civicrm_managed(&$entities) {
  *
  */
 function osm_civicrm_pre($op, $objectName, $id, &$params) {
-  if ($objectName === 'Address' && $op === 'edit' && !is_null($id) && $params['manual_geo_code'] == 0) {
+  if ($objectName === 'Address' && $op === 'edit' && !is_null($id) && $params['manual_geo_code'] != 1) {
     $current_address = \Civi\Api4\Address::get(FALSE)
       ->addWhere('id', '=', $id)
       ->execute()
@@ -122,9 +122,11 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
 
     $fields_match = TRUE;
     foreach ($fields_to_check as $field) {
-      fields_match = (strtolower($current_address[$field]) == strtolower($params[$field]);
-      if (!$fields_match) {
-        break;
+      if (isset($params[$field])) {
+        $fields_match = (strtolower($current_address[$field]) == strtolower($params[$field]));
+        if (!$fields_match) {
+          break;
+        }
       }
     }
 
@@ -134,7 +136,7 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       $current_address_has_geo_codes = ($current_address['geo_code_1'] && $current_address['geo_code_2']);
       $new_address_has_geo_codes = ($params['geo_code_1'] && $params['geo_code_2']);
 
-      if ($current_address_has_geo_codes && !$new_address_has_geo_codes) {
+      if ($current_address['manual_geo_code'] || ($current_address_has_geo_codes && !$new_address_has_geo_codes)) {
         unset($params['geo_code_1']);
         unset($params['geo_code_2']);
       }
