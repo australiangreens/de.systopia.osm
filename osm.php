@@ -107,6 +107,9 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       return;
     }
 
+    Civi::log()->debug("Beginning pre function. Printing params");
+    Civi::log()->debug(json_encode($params));
+
     $params = array_map(function($value) {
       return $value == "null" ? NULL : $value;
     }, $params);
@@ -115,6 +118,9 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       ->addWhere('id', '=', $id)
       ->execute()
       ->first();
+
+    Civi::log()->debug("Printing current address");
+    Civi::log()->debug(json_encode($curr_addr));
 
     $fields_to_check = [
       'city',
@@ -144,11 +150,19 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       $curr_addr_has_geo_codes = (!empty($curr_addr['geo_code_1']) && !empty($curr_addr['geo_code_2']));
       $new_addr_has_geo_codes = (!empty($params['geo_code_1']) && !empty($params['geo_code_2']));
 
+      Civi::log()->debug("curr_addr_has_geo_codes");
+      Civi::log()->debug(json_encode($curr_addr_has_geo_codes));
+      Civi::log()->debug("new_addr_has_geo_codes");
+      Civi::log()->debug(json_encode($new_addr_has_geo_codes));
+
       if ($curr_addr['manual_geo_code'] || ($curr_addr_has_geo_codes && !$new_addr_has_geo_codes)) {
         unset($params['geo_code_1']);
         unset($params['geo_code_2']);
       }
     }
+
+    Civi::log()->debug("Printing params");
+    Civi::log()->debug(json_encode($params));
 
   }
 }
