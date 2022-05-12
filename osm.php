@@ -101,12 +101,21 @@ function osm_civicrm_managed(&$entities) {
  *
  */
 function osm_civicrm_pre($op, $objectName, $id, &$params) {
-  if ($objectName === 'Address' && $op === 'edit' && !is_null($id) && $params['manual_geo_code'] != 1) {
+  if ($objectName === 'Address' && $op === 'edit' && !is_null($id)) {
+
+    if ($params['manual_geo_code'] == 1) {
+      return;
+    }
+
+    Civi::log()->debug("Inside pre hook. Printing params object");
+    Civi::log()->debug(json_encode($params));
 
     $curr_addr = \Civi\Api4\Address::get(FALSE)
       ->addWhere('id', '=', $id)
       ->execute()
       ->first();
+
+    Civi::log()->debug("Printing current address");
 
     $fields_to_check = [
       'city',
@@ -143,5 +152,7 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       }
     }
 
+    Civi::log()->debug("Exiting pre hook. Printing params object");
+    Civi::log()->debug(json_encode($params));
   }
 }
