@@ -116,6 +116,7 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       ->first();
 
     Civi::log()->debug("Printing current address");
+    Civi::log()->debug(json_encode($curr_addr));
 
     $fields_to_check = [
       'city',
