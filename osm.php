@@ -101,6 +101,10 @@ function osm_civicrm_managed(&$entities) {
  *
  */
 function osm_civicrm_pre($op, $objectName, $id, &$params) {
+  if ($objectName === 'Address') {
+    Civi::log()->debug('Address action:');
+    Civi::log()->debug($op);
+  }
   if ($objectName === 'Address' && $op === 'edit' && !is_null($id)) {
 
     if ($params['manual_geo_code'] == 1) {
