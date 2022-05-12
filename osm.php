@@ -111,16 +111,10 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       return $value == "null" ? NULL : $value;
     }, $params);
 
-    Civi::log()->debug("Inside pre hook. Printing params object");
-    Civi::log()->debug(json_encode($params));
-
     $curr_addr = \Civi\Api4\Address::get(FALSE)
       ->addWhere('id', '=', $id)
       ->execute()
       ->first();
-
-    Civi::log()->debug("Printing current address");
-    Civi::log()->debug(json_encode($curr_addr));
 
     $fields_to_check = [
       'city',
@@ -151,12 +145,10 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       $new_addr_has_geo_codes = (!empty($params['geo_code_1']) && !empty($params['geo_code_2']));
 
       if ($curr_addr['manual_geo_code'] || ($curr_addr_has_geo_codes && !$new_addr_has_geo_codes)) {
-        unset($curr_addr['geo_code_1']);
-        unset($curr_addr['geo_code_2']);
+        unset($params['geo_code_1']);
+        unset($params['geo_code_2']);
       }
     }
 
-    Civi::log()->debug("Exiting pre hook. Printing params object");
-    Civi::log()->debug(json_encode($params));
   }
 }
