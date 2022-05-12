@@ -107,6 +107,10 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       return;
     }
 
+    $params = array_map(function($value) {
+      return $value == "null" ? NULL : $value;
+    }, $params);
+
     Civi::log()->debug("Inside pre hook. Printing params object");
     Civi::log()->debug(json_encode($params));
 
@@ -146,10 +150,9 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       $curr_addr_has_geo_codes = (!empty($curr_addr['geo_code_1']) && !empty($curr_addr['geo_code_2']));
       $new_addr_has_geo_codes = (!empty($params['geo_code_1']) && !empty($params['geo_code_2']));
 
-      if ($curr_addr_has_geo_codes && !$new_addr_has_geo_codes) {
-        $params['geo_code_1'] = $curr_addr['geo_code_1'];
-        $params['geo_code_2'] = $curr_addr['geo_code_2'];
-        if ($curr_addr['manual_geo_code']) unset($params['manual_geo_code']);
+      if ($curr_addr['manual_geo_code'] || ($curr_addr_has_geo_codes && !$new_addr_has_geo_codes)) {
+        unset($curr_addr['geo_code_1']);
+        unset($curr_addr['geo_code_2']);
       }
     }
 
