@@ -115,7 +115,7 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
     Civi::log()->debug(json_encode($params));
 
     $params = array_map(function($value) {
-      return $value == "null" ? NULL : $value;
+      return $value === "null" ? NULL : $value;
     }, $params);
 
     $curr_addr = \Civi\Api4\Address::get(FALSE)
