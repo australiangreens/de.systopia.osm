@@ -159,7 +159,7 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       Civi::log()->debug("new_addr_has_geo_codes");
       Civi::log()->debug(json_encode($new_addr_has_geo_codes));
 
-      if ($curr_addr['manual_geo_code'] || ($curr_addr_has_geo_codes && !$new_addr_has_geo_codes)) {
+      if ($curr_addr_has_geo_codes && !$new_addr_has_geo_codes) {
         unset($params['geo_code_1']);
         unset($params['geo_code_2']);
       }
