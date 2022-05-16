@@ -95,19 +95,27 @@ function osm_civicrm_managed(&$entities) {
 /**
  * Implementation of hook_civicrmPre
  *
- * Used to prevent new geo_code_1 & geo_code_2 values being written to the database
+ * Used to prevent NULL geo_code_1 & geo_code_2 values being written to the database
  * when the address data being written is otherwise no different to the existing
  * address
+ *
  */
 function osm_civicrm_pre($op, $objectName, $id, &$params) {
-  if ($objectName === 'Address' && $op === 'edit' && !is_null($id) && $params['manual_geo_code'] == 0) {
-    $current_address = \Civi\Api4\Address::get(FALSE)
+  if ($objectName === 'Address' && $op === 'edit' && !is_null($id)) {
+
+    if ($params['manual_geo_code'] == 1) {
+      return;
+    }
+
+    $params = array_map(function($value) {
+      return $value === "null" ? NULL : $value;
+    }, $params);
+
+    $curr_addr = \Civi\Api4\Address::get(FALSE)
       ->addWhere('id', '=', $id)
       ->execute()
       ->first();
 
-    Civi::log()->debug(json_encode($current_address));
-    Civi::log()->debug(json_encode($params));
     $fields_to_check = [
       'city',
       'country_id',
@@ -120,19 +128,27 @@ function osm_civicrm_pre($op, $objectName, $id, &$params) {
       'supplemental_address_3',
     ];
 
-    $skip_geocode = TRUE;
+    $fields_match = TRUE;
     foreach ($fields_to_check as $field) {
-      $skip_geocode = ($current_address[$field] == $params[$field]);
-      if (!$skip_geocode) {
-        break;
+      if (isset($params[$field])) {
+        $fields_match = (strtolower($curr_addr[$field]) == strtolower($params[$field]));
+        if (!$fields_match) {
+          break;
+        }
       }
     }
 
-    if ($skip_geocode) {
-      unset($params['geo_code_1']);
-      unset($params['geo_code_2']);
+    if ($fields_match) {
+      // Address data is the same, now decide if we keep existing or use
+      // new geo_code_x values (we don't want NULL or "Null Island")
+      $curr_addr_has_geo_codes = (!empty($curr_addr['geo_code_1']) && !empty($curr_addr['geo_code_2']));
+      $new_addr_has_geo_codes = (!empty($params['geo_code_1']) && !empty($params['geo_code_2']));
+
+      if ($curr_addr_has_geo_codes && !$new_addr_has_geo_codes) {
+        unset($params['geo_code_1']);
+        unset($params['geo_code_2']);
+      }
     }
-    Civi::log()->debug('finished pre hook');
-    Civi::log()->debug(json_encode($params));
+
   }
 }
